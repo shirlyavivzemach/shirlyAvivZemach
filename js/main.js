@@ -7,6 +7,7 @@ var NORMAL = '🤩'
 var gMinesCounter = 0
 var gStartGame = false
 var firstClick = false
+var GAMEOVER = false
 var timeInterval;
 var gTime;
 
@@ -28,13 +29,16 @@ var gGame = {
 
 
 function initGame() {
-
+    stop()
+    GAMEOVER=false
+    gGame.isOn=true
     gBoard = buildBoard();
-    gGame.isOn = true;
     renderBoard(gBoard);
 }
 
 function startGame() {
+    if(GAMEOVER) return
+    gGame.isOn=true
     stop()
     gTime = Date.now();
     timeInterval = setInterval(gameTimer, 10);
@@ -122,15 +126,15 @@ function setMinesNegsCount(board) {
 
 
 // Called when a cell (td) is clicked 
-function cellClicked(i, j) {
+function cellClicked(i, j){
     var cell;
     if (gBoard[i][j].isMine) {
-       
-        stop()
 checkGameOver()
+stop()
+initGame()
     }
     
-    if (gBoard[i][j] !== MINES ) {
+    if (gBoard[i][j] !== MINES && !GAMEOVER ) {
         gBoard[i][j].isShown = true;
         renderBoard(gBoard);
         cell = gBoard[i][j];
@@ -140,7 +144,7 @@ checkGameOver()
         gGame.isOn = false
         gGame.isWin = false
     }
-    if(!firstClick){
+    if(!firstClick && !GAMEOVER){
         expandShown(gBoard,cell,i,j)
         setMines()
         setMinesNegsCount(gBoard)
@@ -170,7 +174,6 @@ function setMines() {
         var posI = getRandomInteger(0, gLevel.SIZE );
         var posJ = getRandomInteger(0, gLevel.SIZE );
         while(gBoard[posI][posJ].isShown === true){
-            console.log(posI,posJ)
             posI = getRandomInteger(0, gLevel.SIZE );
             posJ = getRandomInteger(0, gLevel.SIZE );
             if( gBoard[posI][posJ].isShown === false)
@@ -210,7 +213,6 @@ function cellMarked(i, j) {
         gBoard[i][j].isMarked = true
     else {
         cellClicked(i, j)
-
     }
 
     renderBoard(gBoard)
@@ -244,26 +246,29 @@ function getNeighbors(currCell, cellI, cellJ, board) {
 }
 // Game ends when all mines are marked, and all the other cells are shown
 function checkGameOver() {
-    var elMsg = document.querySelector('.gameOver h2')
+    GAMEOVER = true
         gGame.isWin = false
         gGame.isOn = false
-    stop()
-    firstClick=false
+        firstClick=false
+        initGame()
 alert("Game over!")
+setLevel()
 }
 
 function checkWin() {
    var cnt = 1
     for (var i = 0; i < gLevel.SIZE; i++) {
         for (var j = 0; j < gLevel.SIZE; j++) {
-            console.log(gBoard[i][j])
             if (gBoard[i][j].isShown === true || gBoard[i][j].isMarked) {
                   cnt++
             }
         }
     }
-   if(cnt===gLevel.SIZE*gLevel.SIZE  ) alert('You Won!')
-
+   if(cnt===gLevel.SIZE*gLevel.SIZE  ) {alert('You Won!')
+   stop()
+   initGame()
+   setLevel()
+   }
 }
 
 function setLevel(elBtn) {
@@ -275,7 +280,10 @@ function setLevel(elBtn) {
     } else if (btnClassName === 'hard-level') {
         gLevel.SIZE = 12;
     }
+stop()
     initGame()
+
+
 }
 
 
@@ -290,7 +298,7 @@ function gameTimer() {
 }
 
 function stop() {
-
+    firstClick=false
     gGame.isOn = false;
     clearInterval(timeInterval)
 
