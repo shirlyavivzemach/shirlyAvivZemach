@@ -29,11 +29,11 @@ var gGame = {
 
 
 function initGame() {
-    stop()
     GAMEOVER=false
     gGame.isOn=true
     gBoard = buildBoard();
     renderBoard(gBoard);
+    stop()
 }
 
 function startGame() {
@@ -73,7 +73,7 @@ function renderBoard(board) {
         for (var j = 0; j < gLevel.SIZE; j++) {
             var currCell = board[i][j]
             var id = `${'r' + i + 'c' + j}`
-            strHTML += `\t<td id=${id} class="cellColor" onmousedown="cellMarked(${i},${j})" onclick="cellClicked(${id}, ${i},${j})">${renderCellContent(currCell)} </td>
+            strHTML += `\t<td id=${id}  onmousedown="cellMarked(${i},${j})" onclick="cellClicked(${id}, ${i},${j})">${renderCellContent(currCell)} </td>
             \n`;
         }
         strHTML += '</tr>\n';
@@ -127,11 +127,15 @@ function setMinesNegsCount(board) {
 
 // Called when a cell (td) is clicked 
 function cellClicked(i, j){
+    if(GAMEOVER) return
     var cell;
     if (gBoard[i][j].isMine) {
+        gBoard[i][j].isShown = true;
+        renderBoard(gBoard);
+
+
 checkGameOver()
-stop()
-initGame()
+
     }
     
     if (gBoard[i][j] !== MINES && !GAMEOVER ) {
@@ -144,7 +148,7 @@ initGame()
         gGame.isOn = false
         gGame.isWin = false
     }
-    if(!firstClick && !GAMEOVER){
+    if(!firstClick ){
         expandShown(gBoard,cell,i,j)
         setMines()
         setMinesNegsCount(gBoard)
@@ -174,6 +178,7 @@ function setMines() {
         var posI = getRandomInteger(0, gLevel.SIZE );
         var posJ = getRandomInteger(0, gLevel.SIZE );
         while(gBoard[posI][posJ].isShown === true){
+        
             posI = getRandomInteger(0, gLevel.SIZE );
             posJ = getRandomInteger(0, gLevel.SIZE );
             if( gBoard[posI][posJ].isShown === false)
@@ -228,10 +233,10 @@ function expandShown(board, cell, i, j) {
 
 
 function getNeighbors(currCell, cellI, cellJ, board) {
-    var startIdxI = cellI - 1
-    var endIdxI = cellI + 1
-    var startIdxJ = cellJ - 1
-    var endIdxJ = cellJ + 1
+    var startIdxI = cellI - 1;
+    var endIdxI = cellI + 1;
+    var startIdxJ = cellJ - 1;
+    var endIdxJ = cellJ + 1;
 
     if (cellI === 0) startIdxI = cellI
     else if (cellI === gLevel.SIZE - 1) endIdxI = cellI
@@ -246,17 +251,20 @@ function getNeighbors(currCell, cellI, cellJ, board) {
 }
 // Game ends when all mines are marked, and all the other cells are shown
 function checkGameOver() {
-    GAMEOVER = true
-        gGame.isWin = false
-        gGame.isOn = false
-        firstClick=false
-        initGame()
-alert("Game over!")
-setLevel()
+    GAMEOVER = true;
+        gGame.isWin = false;
+        gGame.isOn = false;
+        firstClick=false;
+       stop()
+        
+alert("Game over!");
+
+
+
 }
 
 function checkWin() {
-   var cnt = 1
+   var cnt = 1;
     for (var i = 0; i < gLevel.SIZE; i++) {
         for (var j = 0; j < gLevel.SIZE; j++) {
             if (gBoard[i][j].isShown === true || gBoard[i][j].isMarked) {
@@ -264,10 +272,11 @@ function checkWin() {
             }
         }
     }
-   if(cnt===gLevel.SIZE*gLevel.SIZE  ) {alert('You Won!')
+   if(cnt===gLevel.SIZE*gLevel.SIZE) {
+       alert('You Won!');
+
    stop()
-   initGame()
-   setLevel()
+   //initGame()
    }
 }
 
@@ -280,9 +289,9 @@ function setLevel(elBtn) {
     } else if (btnClassName === 'hard-level') {
         gLevel.SIZE = 12;
     }
-stop()
-    initGame()
-
+    
+  stop()
+ initGame()
 
 }
 
@@ -298,8 +307,8 @@ function gameTimer() {
 }
 
 function stop() {
-    firstClick=false
+    firstClick=false;
     gGame.isOn = false;
-    clearInterval(timeInterval)
+    clearInterval(timeInterval);
 
 }
